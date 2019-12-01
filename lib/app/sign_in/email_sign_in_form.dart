@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:timer_tracker/app/sign_in/validation.dart';
 import 'package:timer_tracker/common_widgets/form_submit_button.dart';
+import 'package:timer_tracker/common_widgets/platform_alert_dialog.dart';
 import 'package:timer_tracker/services/auth.dart';
 
 enum EmailSignInType { signIn, register }
@@ -39,20 +42,12 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
       }
       Navigator.of(context).pop();
     } catch (error) {
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text('Sign in failed'),
-              content: Text(error.toString()),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text('OK'),
-                  onPressed: () => Navigator.of(context).pop(),
-                )
-              ],
-            );
-          });
+      PlatformAlertDialog(
+        title: 'Sign in failed!',
+        content: error.toString(),
+        defaultActionText: 'OK',
+      ).show(context);
+
     } finally {
       setState(() {
         _isLoading = false;
