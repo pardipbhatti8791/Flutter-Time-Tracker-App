@@ -1,11 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:timer_tracker/app/sign_in/validation.dart';
 import 'package:timer_tracker/common_widgets/form_submit_button.dart';
 import 'package:timer_tracker/common_widgets/platform_alert_dialog.dart';
+import 'package:timer_tracker/common_widgets/platform_exception_alert_dialog.dart';
 import 'package:timer_tracker/services/auth.dart';
-import 'package:timer_tracker/services/auth_provider.dart';
+import 'package:flutter/services.dart';
 
 enum EmailSignInType { signIn, register }
 
@@ -33,18 +35,17 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
       _isLoading = true;
     });
     try {
-      final auth = AuthProvider.of(context);
+      final auth = Provider.of<AuthBase>(context);
       if (_formType == EmailSignInType.signIn) {
         await auth.signInWithEmailAndPassword(_email, _password);
       } else {
         await auth.createUserWithEmailAndPassword(_email, _password);
       }
       Navigator.of(context).pop();
-    } catch (error) {
-      PlatformAlertDialog(
+    } on PlatformException catch (error) {
+      PlatformExceptionAlertDialog(
         title: 'Sign in failed!',
-        content: error.toString(),
-        defaultActionText: 'OK',
+        exception: error,
       ).show(context);
 
     } finally {
