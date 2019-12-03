@@ -11,8 +11,8 @@ class User {
 abstract class AuthBase {
   Stream<User> get onAuthStateChanged;
   Future<User> signInWithGoogle();
-  Future<User> currentUser();
   Future<User> signInAnonymously();
+  Future<User> currentUser();
   Future<void> signOut();
   Future<User> signInWithEmailAndPassword(String email, String password);
   Future<User> createUserWithEmailAndPassword(String email, String password);

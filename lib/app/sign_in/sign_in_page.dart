@@ -1,28 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 import 'package:timer_tracker/app/sign_in/email_sign_in.dart';
+import 'package:timer_tracker/app/sign_in/sign_in_bloc.dart';
 import 'package:timer_tracker/app/sign_in/sign_in_button.js.dart';
 import 'package:timer_tracker/app/sign_in/social_sign_in_button.dart';
+import 'package:timer_tracker/common_widgets/platform_exception_alert_dialog.dart';
 import 'package:timer_tracker/services/auth.dart';
 
-
 class SignInPage extends StatelessWidget {
+  final SignInBloc bloc;
+  SignInPage({@required this.bloc});
+
+  static Widget create(BuildContext context) {
+    final auth = Provider.of<AuthBase>(context);
+    return Provider<SignInBloc>(
+      // ignore: deprecated_member_use
+      builder: (_) => SignInBloc(auth: auth),
+      dispose: (context, bloc) => bloc.dispose(),
+      child: Consumer<SignInBloc>(
+        builder: (context, bloc, _) => SignInPage(
+          bloc: bloc,
+        ),
+      ),
+    );
+  }
+
+  void _showSignInError(BuildContext context, PlatformException exception) {
+    PlatformExceptionAlertDialog(
+      title: 'Sign in',
+      exception: exception,
+    ).show(context);
+  }
 
   Future<void> _signInAnonymously(BuildContext context) async {
     try {
-      final auth = Provider.of<AuthBase>(context);
-      await auth.signInAnonymously();
-    } catch (e) {
-      print(e.toString());
+      await bloc.signInAnonymously();
+    } on PlatformException catch (e) {
+      _showSignInError(context, e);
     }
   }
 
   Future<void> _signInWithGoogle(BuildContext context) async {
     try {
-    final auth = Provider.of<AuthBase>(context);
-      await auth.signInWithGoogle();
-    } catch (e) {
-      print(e.toString());
+
+      await bloc.signInWithGoogle();
+    } on PlatformException catch (e) {
+      _showSignInError(context, e);
     }
   }
 
@@ -31,7 +55,7 @@ class SignInPage extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         fullscreenDialog: true,
-        builder: (context) =>  EmailSignInPage(),
+        builder: (context) => EmailSignInPage(),
       ),
     );
   }
@@ -43,26 +67,24 @@ class SignInPage extends StatelessWidget {
         title: Text('Time Tracker'),
         elevation: 2.0,
       ),
-      body: _buildContent(context),
+      body: StreamBuilder<bool>(
+          stream: bloc.isLoadingStream,
+          initialData: false,
+          builder: (context, snapshot) {
+            return _buildContent(context, snapshot.data);
+          }),
       backgroundColor: Colors.grey[200],
     );
   }
 
-  Widget _buildContent(BuildContext context) {
+  Widget _buildContent(BuildContext context, bool isLoading) {
     return Padding(
       padding: EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text(
-            'Sign In',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          _buildHeader(isLoading),
           SizedBox(
             height: 48.0,
           ),
@@ -71,7 +93,7 @@ class SignInPage extends StatelessWidget {
             text: "Sign in with Google",
             textColor: Colors.black87,
             color: Colors.white,
-            onPressed: () => _signInWithGoogle(context),
+            onPressed: () => isLoading ? null : _signInWithGoogle(context),
           ),
           SizedBox(
             height: 8.0,
@@ -113,6 +135,22 @@ class SignInPage extends StatelessWidget {
             onPressed: () => _signInAnonymously(context),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(bool loading) {
+    if (loading) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    return Text(
+      'Sign In',
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontSize: 32,
+        fontWeight: FontWeight.w600,
       ),
     );
   }
