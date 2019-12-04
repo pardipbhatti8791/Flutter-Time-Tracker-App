@@ -12,7 +12,6 @@ class SignInBloc {
     @required this.isLoading,
   });
 
-
   Future<User> _signIn(Future<User> Function() signInMethod) async {
     try {
       isLoading.value = true;

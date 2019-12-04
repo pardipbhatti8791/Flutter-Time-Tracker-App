@@ -10,7 +10,8 @@ import 'package:timer_tracker/services/auth.dart';
 
 class SignInPage extends StatelessWidget {
   final SignInBloc bloc;
-  SignInPage({@required this.bloc});
+  SignInPage({@required this.bloc, @required this.isLoading});
+  final bool isLoading;
 
   static Widget create(BuildContext context) {
     final auth = Provider.of<AuthBase>(context);
@@ -24,6 +25,7 @@ class SignInPage extends StatelessWidget {
           child: Consumer<SignInBloc>(
             builder: (context, bloc, _) => SignInPage(
               bloc: bloc,
+              isLoading: isLoading.value,
             ),
           ),
         ),
@@ -66,26 +68,26 @@ class SignInPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = Provider.of<ValueNotifier<bool>>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Time Tracker'),
         elevation: 2.0,
       ),
-      body: _buildContent(context, isLoading.value),
+      body: _buildContent(context),
 
       backgroundColor: Colors.grey[200],
     );
   }
 
-  Widget _buildContent(BuildContext context, bool isLoading) {
+  Widget _buildContent(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          _buildHeader(isLoading),
+          _buildHeader(),
           SizedBox(
             height: 48.0,
           ),
@@ -140,8 +142,8 @@ class SignInPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(bool loading) {
-    if (loading) {
+  Widget _buildHeader() {
+    if (isLoading) {
       return Center(
         child: CircularProgressIndicator(),
       );
