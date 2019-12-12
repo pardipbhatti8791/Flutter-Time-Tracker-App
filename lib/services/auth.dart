@@ -87,7 +87,8 @@ class Auth implements AuthBase {
   }
 
   @override
-  Future<User> createUserWithEmailAndPassword(String email, String password) async {
+  Future<User> createUserWithEmailAndPassword(
+      String email, String password) async {
     final authResult = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
